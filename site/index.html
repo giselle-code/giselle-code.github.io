@@ -153,6 +153,17 @@ const bananothingGallery=[
  {src:bananothingPhotos[2],width:2200,height:2933},
  {src:bananothingPhotos[0],width:2200,height:2933}
 ];
+const bananoHouseGallery=[
+ {src:bananothingPhotos[19],width:2200,height:1237},
+ {src:bananothingPhotos[21],width:2200,height:1237},
+ {src:bananothingPhotos[20],width:2200,height:1237},
+ {src:bananothingPhotos[15],width:2200,height:1237},
+ {src:bananothingPhotos[18],width:2200,height:1237},
+ {src:bananothingPhotos[16],width:2200,height:1237},
+ {src:bananothingPhotos[13],width:2200,height:1267},
+ {src:bananothingPhotos[14],width:2200,height:1233},
+ {src:bananothingPhotos[17],width:2200,height:1466}
+];
 const detail=document.querySelector('#project-detail');
 const homeMain=document.querySelector('main');
 const homeFooter=document.querySelector('body > footer');
@@ -175,8 +186,8 @@ function renderProject(id){
  document.querySelector('#detail-client-label').textContent=p.client?'CLIENT':'PROJECT';
  document.querySelector('#detail-client').textContent=p.client||p.name;
  document.querySelector('#detail-services').textContent=p.services||p.category;
- const gallery=document.querySelector('.detail-gallery');gallery.replaceChildren();gallery.classList.toggle('single-column',id===0||id===1||id===2||id===3);
- const galleryImages=id===0?bamwaveGallery:id===1?cafeGallery:id===2?greenLegendGallery:id===3?bananothingGallery:galleryIndices[id].map(index=>({src:trailImages[index]}));
+ const gallery=document.querySelector('.detail-gallery');gallery.replaceChildren();gallery.classList.toggle('single-column',id>=0&&id<=4);
+ const galleryImages=id===0?bamwaveGallery:id===1?cafeGallery:id===2?greenLegendGallery:id===3?bananothingGallery:id===4?bananoHouseGallery:galleryIndices[id].map(index=>({src:trailImages[index]}));
  galleryImages.forEach((item,i)=>{const figure=document.createElement('figure');const img=imageElement(item.src,p.name+' — project detail '+(i+1));if(item.width){img.width=item.width;img.height=item.height}figure.append(img);gallery.append(figure)});
  const related=document.querySelector('.detail-related');related.replaceChildren();
  [1,2].forEach(offset=>{const next=(id+offset)%projects.length,q=projects[next],a=document.createElement('a');a.href=projectLink(next);a.className='related-project';a.append(imageElement(coverFor(q),q.name+' project'));const caption=document.createElement('span');caption.className='related-caption';const title=document.createElement('span');title.textContent=q.name;const category=document.createElement('small');category.textContent=q.category;caption.append(title,category);a.append(caption);related.append(a)});
