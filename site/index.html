@@ -20,6 +20,7 @@ html.scroll-buffering{scroll-behavior:auto}
 
 .project-page .nav{position:fixed;top:0}
 .detail-hero h1.solid-white{color:#fff;mix-blend-mode:normal}
+.page-transition-outgoing{position:fixed;inset:0;z-index:9;overflow:hidden;background:var(--bg);pointer-events:none;will-change:transform,opacity,clip-path}
 .detail-hero h1.single-line{white-space:nowrap;font-size:clamp(24px,7.2vw,125px)}
 @media(max-width:600px){.detail-hero h1.single-line{font-size:clamp(24px,12vw,72px)}}
 .detail-gallery.single-column{grid-template-columns:minmax(0,1fr)}
@@ -180,13 +181,33 @@ function renderProject(id){
  window.scrollTo({top:0,behavior:'instant'});
  document.querySelector('#detail-title').focus({preventScroll:true});
 }
-function routeProject(){
+let finishPageTransition=()=>{};
+function preparePageTransition(){
+ finishPageTransition();
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate)return ()=>{};
+ const outgoing=document.createElement('div');outgoing.className='page-transition-outgoing';outgoing.setAttribute('aria-hidden','true');outgoing.inert=true;
+ const canvas=document.createElement('div');canvas.style.transform='translateY(-'+window.scrollY+'px)';
+ (activeProject>=0?[detail]:[homeMain,homeFooter]).forEach(node=>{const clone=node.cloneNode(true);clone.removeAttribute('id');clone.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));canvas.append(clone)});
+ outgoing.append(canvas);document.body.append(outgoing);
+ return ()=>{
+  const options={duration:700,easing:'cubic-bezier(.27,0,.51,1)',fill:'both'};
+  const exit=outgoing.animate([{transform:'translateY(0)',opacity:1,clipPath:'inset(0 0 0 0)'},{transform:'translateY(-40vh)',opacity:0,clipPath:'inset(0 0 100% 0)'}],options);
+  const incoming=activeProject>=0?[detail]:[homeMain,homeFooter];
+  const entrances=incoming.map(node=>node.animate([{transform:'translateY(30vh)',opacity:0,clipPath:'inset(100vh 0 0 0)'},{transform:'translateY(0)',opacity:1,clipPath:'inset(0 0 0 0)'}],{...options,delay:500}));
+  const cleanup=()=>{exit.cancel();entrances.forEach(animation=>animation.cancel());outgoing.remove()};
+  finishPageTransition=cleanup;
+  Promise.allSettled([exit.finished,...entrances.map(animation=>animation.finished)]).then(()=>{if(finishPageTransition===cleanup){cleanup();finishPageTransition=()=>{}}});
+ };
+}
+function routeProject(animate=false){
  const match=location.hash.match(/^#works\/([^/]+)$/),id=match?projectSlugs.indexOf(match[1]):-1;
- if(id>=0){if(activeProject<0&&!document.querySelector('#project-detail').hidden)homeScroll=window.scrollY;renderProject(id);return}
+ const reveal=animate&&id!==activeProject&&(id>=0||activeProject>=0)?preparePageTransition():()=>{};
+ if(id>=0){if(activeProject<0&&!document.querySelector('#project-detail').hidden)homeScroll=window.scrollY;renderProject(id);reveal();return}
  if(activeProject>=0){activeProject=-1;homeMain.hidden=false;homeFooter.hidden=false;detail.hidden=true;document.body.classList.remove('project-page');document.title='Giselle — Independent Designer';const target=document.querySelector(location.hash==='#about'?'#about':location.hash==='#home'?'#home':'#work');window.scrollTo({top:location.hash==='#work'?(homeScroll??target.offsetTop):target.offsetTop,behavior:'instant'});}
+ reveal();
 }
 document.querySelectorAll('.project').forEach(button=>button.addEventListener('click',()=>{homeScroll=window.scrollY;location.hash=projectLink(Number(button.dataset.id))}));
-window.addEventListener('hashchange',routeProject);
+window.addEventListener('hashchange',()=>routeProject(true));
 routeProject();
 
 const menuToggle=document.querySelector(".menu-toggle");const navHeader=document.querySelector(".nav");function closeMenu(){navHeader.classList.remove("menu-open");menuToggle.setAttribute("aria-expanded","false");menuToggle.textContent="Menu"}menuToggle.addEventListener("click",()=>{const open=navHeader.classList.toggle("menu-open");menuToggle.setAttribute("aria-expanded",String(open));menuToggle.textContent=open?"Close":"Menu"});document.querySelectorAll(".nav nav a").forEach(a=>a.addEventListener("click",closeMenu));document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMenu()});
