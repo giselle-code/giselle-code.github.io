@@ -19,6 +19,8 @@ html.scroll-buffering{scroll-behavior:auto}
 @media(max-width:600px){.detail-hero{min-height:560px;height:90svh}.detail-hero h1{left:15px;right:15px;bottom:90px;font-size:clamp(48px,15vw,80px);line-height:.98;letter-spacing:-.06em}.detail-back{left:15px;bottom:28px}.detail-info{padding:40px 15px 65px;display:block}.detail-info h2{margin-bottom:35px;font-size:12px}.detail-info p{font-size:32px;line-height:1.08;text-indent:18%;letter-spacing:-1.2px}.detail-meta{margin:65px 0 0;gap:25px;font-size:12px}.detail-gallery{padding:0 5px;gap:5px;display:block}.detail-gallery figure{margin-bottom:5px}.detail-gallery figure:not(:nth-child(3n+1)) img{height:auto}.detail-more{padding:70px 5px 0}.detail-more-heading{padding:0 10px;font-size:12px}.detail-more-heading h2{font-size:12px}.detail-related{grid-template-columns:1fr;gap:5px}.related-caption{inset:auto 15px 20px}.related-caption>span{font-size:28px}.related-caption small{width:120px;font-size:12px}.detail-end{padding:70px 15px 30px;align-items:start;gap:40px;flex-direction:column}.detail-end>span{font-size:24vw}}
 
 .project-page .nav{position:fixed;top:0}
+.detail-meta.has-year{grid-template-columns:.6fr 1fr 1.5fr;margin-left:20%}
+@media(max-width:600px){.detail-meta.has-year{grid-template-columns:1fr 1fr;margin-left:0}.detail-meta.has-year>div:last-child{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -43,14 +45,14 @@ html.scroll-buffering{scroll-behavior:auto}
 <footer><a class="footer-name" href="#home">Giselle<span>↗</span></a><div class="footer-bottom"><span>© 2026 GISELLE</span><span class="preview-note">DESIGN PREVIEW · CONCEPT PROJECTS</span><a href="#home">BACK TO TOP ↑</a></div></footer>
 <main id="project-detail" hidden aria-labelledby="detail-title">
 <section class="detail-hero"><img id="detail-cover" alt=""><h1 id="detail-title" tabindex="-1"></h1><a class="detail-back" href="#work">← All works</a></section>
-<section class="detail-info"><h2>INFO</h2><div><p id="detail-description"></p><dl class="detail-meta"><div><dt>PROJECT</dt><dd id="detail-client"></dd></div><div><dt>SERVICES</dt><dd id="detail-services"></dd></div></dl></div></section>
+<section class="detail-info"><h2>INFO</h2><div><p id="detail-description"></p><dl class="detail-meta"><div id="detail-year-field" hidden><dt>YEAR</dt><dd id="detail-year"></dd></div><div><dt id="detail-client-label">PROJECT</dt><dd id="detail-client"></dd></div><div><dt>SERVICES</dt><dd id="detail-services"></dd></div></dl></div></section>
 <section class="detail-gallery" aria-label="Project images"></section>
 <section class="detail-more"><div class="detail-more-heading"><h2>MORE WORKS</h2><a href="#work">See all (6) ↗</a></div><div class="detail-related"></div></section>
 <div class="detail-end"><a href="#work">Back to all works ↑</a><span>Giselle</span></div>
 </main>
 <script>const artworks={};document.querySelectorAll("img[data-artwork]").forEach(image=>{artworks[image.dataset.artwork]=image.src});
 const projects = [
- {name:'Bamwave',asset:'bamwave',category:'Brand，packaging，website design',text:'Bamwave — brand, packaging, and website design.',concept:false},
+ {name:'Bamwave',asset:'bamwave',category:'Brand，packaging，website design',text:'A sustainability-driven branding and packaging design project for Bamwave, an innovative eco-friendly packaging brand. We developed a visual identity that communicates the brand’s commitment to sustainable innovation, highlighting its advanced bamboo fibre technology and fully biodegradable materials.',year:'2025',client:'Bamwave',services:'Brand, website design, packaging',concept:false},
  {name:'Cafe Greenfingers',asset:'cafe-greenfingers',category:'Visual identity，Social media，Marketing Specialist',text:'Cafe Greenfingers — visual identity, social media, and marketing.',concept:false},
  {name:'Green Legend',asset:'green-legend',category:'Brand，Catalog，website design，Social Media',text:'Green Legend — brand, catalog, website design, and social media.',concept:false},
  {name:"Bananothing x Double Eggs",asset:"bananothing-double-eggs",category:"Visual identity，Campaign，Social Media",text:"Bananothing x Double Eggs — visual identity, campaign, and social media.",concept:false},
@@ -90,8 +92,12 @@ function renderProject(id){
  const cover=document.querySelector('#detail-cover');cover.src=coverFor(p);cover.alt=p.name+' project cover';
  document.querySelector('#detail-title').textContent=p.name;
  document.querySelector('#detail-description').textContent=p.text;
- document.querySelector('#detail-client').textContent=p.name;
- document.querySelector('#detail-services').textContent=p.category;
+ document.querySelector('#detail-year').textContent=p.year||'';
+ document.querySelector('#detail-year-field').hidden=!p.year;
+ document.querySelector('.detail-meta').classList.toggle('has-year',Boolean(p.year));
+ document.querySelector('#detail-client-label').textContent=p.client?'CLIENT':'PROJECT';
+ document.querySelector('#detail-client').textContent=p.client||p.name;
+ document.querySelector('#detail-services').textContent=p.services||p.category;
  const gallery=document.querySelector('.detail-gallery');gallery.replaceChildren();
  galleryIndices[id].forEach((index,i)=>{const figure=document.createElement('figure');figure.append(imageElement(trailImages[index],p.name+' — project detail '+(i+1)));gallery.append(figure)});
  const related=document.querySelector('.detail-related');related.replaceChildren();
